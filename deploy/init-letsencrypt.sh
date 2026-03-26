@@ -20,7 +20,7 @@ fi
 
 docker compose -f docker-compose.yml -f docker-compose.https.yml up -d nginx
 
-docker compose -f docker-compose.yml -f docker-compose.https.yml run --rm certbot certonly \
+docker compose -f docker-compose.yml -f docker-compose.https.yml run --rm --entrypoint certbot certbot certonly \
   --webroot \
   --webroot-path /var/www/certbot \
   --email "$LETSENCRYPT_EMAIL" \

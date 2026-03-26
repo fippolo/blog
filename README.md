@@ -15,6 +15,8 @@ The `blog` container clones the configured repository, hard-resets to the select
 
 The sync logic uses plain `git clone` and `git fetch` over HTTPS, so public GitHub repositories work without tokens or SSH keys.
 
+Markdown rendering is handled through Python markdown libraries rather than ad-hoc string conversion. The app currently supports standard Markdown plus tables, fenced code blocks, task lists, footnotes, and Obsidian-style image embeds.
+
 ## Supported diary format
 
 The source repository can be any git repository as long as it follows this shape:
@@ -93,3 +95,4 @@ Environment variables:
 - The source repository stays separate from this deployment repository.
 - The app currently targets public repositories only.
 - Embedded wiki-links other than images are not converted.
+- Parts of this repository were produced with heavy LLM assistance during implementation. Review the code and deployment configuration yourself before using it in production.

@@ -3,3 +3,5 @@ Markdown==3.9
 python-frontmatter==1.1.0
 PyYAML==6.0.3
 gunicorn==23.0.0
+bleach==6.3.0
+pymdown-extensions==10.17.1

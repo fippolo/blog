@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 import frontmatter
+import bleach
 import markdown
 from flask import Flask, abort, render_template, send_from_directory
 from markupsafe import Markup
@@ -21,6 +22,54 @@ REPO_DIR = DATA_DIR / "source"
 PUBLIC_DIR = DATA_DIR / "public"
 POSTS_PUBLIC_DIR = PUBLIC_DIR / "posts"
 ASSETS_PUBLIC_DIR = PUBLIC_DIR / "assets"
+MARKDOWN_EXTENSIONS = [
+    "extra",
+    "fenced_code",
+    "sane_lists",
+    "smarty",
+    "toc",
+    "pymdownx.tasklist",
+    "pymdownx.superfences",
+    "pymdownx.tilde",
+]
+MARKDOWN_EXTENSION_CONFIGS = {
+    "pymdownx.tasklist": {"custom_checkbox": True},
+}
+ALLOWED_TAGS = set(bleach.sanitizer.ALLOWED_TAGS).union(
+    {
+        "p",
+        "pre",
+        "hr",
+        "h1",
+        "h2",
+        "h3",
+        "h4",
+        "h5",
+        "h6",
+        "img",
+        "span",
+        "div",
+        "table",
+        "thead",
+        "tbody",
+        "tr",
+        "th",
+        "td",
+        "code",
+        "input",
+        "label",
+    }
+)
+ALLOWED_ATTRIBUTES = {
+    **bleach.sanitizer.ALLOWED_ATTRIBUTES,
+    "a": ["href", "title", "rel"],
+    "img": ["src", "alt", "title"],
+    "input": ["type", "checked", "disabled"],
+    "label": ["class"],
+    "span": ["class"],
+    "div": ["class"],
+    "code": ["class"],
+}
 
 
 def env_list(name: str, default: str) -> list[str]:
@@ -129,11 +178,13 @@ def replace_obsidian_embeds(text: str) -> str:
 
 def render_markdown(text: str) -> str:
     processed = replace_obsidian_embeds(text)
-    return markdown.markdown(
+    rendered = markdown.markdown(
         processed,
-        extensions=["extra", "sane_lists", "smarty"],
+        extensions=MARKDOWN_EXTENSIONS,
+        extension_configs=MARKDOWN_EXTENSION_CONFIGS,
         output_format="html5",
     )
+    return bleach.clean(rendered, tags=ALLOWED_TAGS, attributes=ALLOWED_ATTRIBUTES)
 
 
 def copy_tree_contents(source: Path, destination: Path) -> None:

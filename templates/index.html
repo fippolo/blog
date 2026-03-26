@@ -2,16 +2,9 @@
 
 {% block content %}
   <section class="hero">
-    <p class="eyebrow">Synced from git</p>
-    <h1>Projects, notes, and build logs.</h1>
-    <p class="hero-copy">
-      This site reads markdown posts from a public repository and republishes them as a lightweight blog.
-    </p>
-    <div class="meta-row">
-      <span>Last sync: {{ last_sync or "Never" }}</span>
-      {% if last_error %}
-        <span class="error">Sync error: {{ last_error }}</span>
-      {% endif %}
+    <h1>{{ settings.site_title }}</h1>
+    <div class="hero-copy">
+      {{ site_description_html }}
     </div>
   </section>
 
@@ -30,7 +23,7 @@
     {% else %}
       <article class="empty-state">
         <h2>No posts found</h2>
-        <p>Check the repository URL, branch, and content format.</p>
+        <p>No entries are available yet.</p>
       </article>
     {% endfor %}
   </section>

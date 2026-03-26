@@ -56,6 +56,8 @@ docker compose up --build -d
 
 The blog will be available through nginx on `http://localhost` or the host and port you mapped with `HTTP_PORT`.
 
+The homepage description can be edited in `content/site-description.md`. You can also point `SITE_DESCRIPTION_FILE` to a different markdown file if you want to keep longer intro text elsewhere.
+
 ## HTTPS with Certbot
 
 This repository includes an nginx + Certbot deployment path for Let's Encrypt certificates.
@@ -90,7 +92,8 @@ The Certbot container renews certificates every 12 hours and nginx serves both H
 Environment variables:
 
 - `SITE_TITLE`: site name shown in the UI.
-- `SITE_DESCRIPTION`: subtitle used in the UI and metadata.
+- `SITE_DESCRIPTION`: fallback short description used when no description file is found.
+- `SITE_DESCRIPTION_FILE`: markdown file used for the homepage description block.
 - `DIARY_REPOSITORY_URL`: public git clone URL for the diary repository.
 - `DIARY_BRANCH`: branch to publish.
 - `POSTS_PATH`: folder inside the repository containing markdown posts.

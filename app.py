@@ -22,6 +22,7 @@ REPO_DIR = DATA_DIR / "source"
 PUBLIC_DIR = DATA_DIR / "public"
 POSTS_PUBLIC_DIR = PUBLIC_DIR / "posts"
 ASSETS_PUBLIC_DIR = PUBLIC_DIR / "assets"
+CONTENT_DIR = BASE_DIR / "content"
 MARKDOWN_EXTENSIONS = [
     "extra",
     "fenced_code",
@@ -84,6 +85,7 @@ class Settings:
         "SITE_DESCRIPTION",
         "A blog generated from an Obsidian-style markdown repository.",
     )
+    site_description_file: str = os.getenv("SITE_DESCRIPTION_FILE", "content/site-description.md")
     repository_url: str = os.getenv("DIARY_REPOSITORY_URL", "").strip()
     repository_branch: str = os.getenv("DIARY_BRANCH", "main").strip()
     sync_interval_seconds: int = int(os.getenv("SYNC_INTERVAL_SECONDS", "300"))
@@ -187,6 +189,17 @@ def render_markdown(text: str) -> str:
     return bleach.clean(rendered, tags=ALLOWED_TAGS, attributes=ALLOWED_ATTRIBUTES)
 
 
+def load_site_description() -> Markup:
+    description_path = Path(settings.site_description_file)
+    if not description_path.is_absolute():
+        description_path = BASE_DIR / description_path
+
+    if description_path.exists():
+        return Markup(render_markdown(description_path.read_text(encoding="utf-8")))
+
+    return Markup(render_markdown(settings.site_description))
+
+
 def copy_tree_contents(source: Path, destination: Path) -> None:
     if not source.exists():
         return
@@ -275,14 +288,11 @@ def sync_loop() -> None:
 def index():
     with content_lock:
         posts = list(content_cache["posts"])
-        last_sync = content_cache["last_sync"]
-        last_error = content_cache["last_error"]
     return render_template(
         "index.html",
         posts=posts,
         settings=settings,
-        last_sync=last_sync,
-        last_error=last_error,
+        site_description_html=load_site_description(),
     )
 
 

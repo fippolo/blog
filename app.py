@@ -189,15 +189,33 @@ def render_markdown(text: str) -> str:
     return bleach.clean(rendered, tags=ALLOWED_TAGS, attributes=ALLOWED_ATTRIBUTES)
 
 
-def load_site_description() -> Markup:
+def get_site_description_text() -> str:
     description_path = Path(settings.site_description_file)
     if not description_path.is_absolute():
         description_path = BASE_DIR / description_path
 
     if description_path.exists():
-        return Markup(render_markdown(description_path.read_text(encoding="utf-8")))
+        return description_path.read_text(encoding="utf-8")
 
-    return Markup(render_markdown(settings.site_description))
+    return settings.site_description
+
+
+def load_site_description() -> Markup:
+    return Markup(render_markdown(get_site_description_text()))
+
+
+@app.context_processor
+def inject_site_description() -> dict[str, Any]:
+    site_description_html = load_site_description()
+    site_description_text = bleach.clean(
+        get_site_description_text(),
+        tags=[],
+        strip=True,
+    ).replace("\n", " ").strip()
+    return {
+        "site_description_html": site_description_html,
+        "site_description_text": site_description_text or settings.site_description,
+    }
 
 
 def copy_tree_contents(source: Path, destination: Path) -> None:
@@ -292,7 +310,6 @@ def index():
         "index.html",
         posts=posts,
         settings=settings,
-        site_description_html=load_site_description(),
     )
 
 

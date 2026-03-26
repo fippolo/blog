@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}{{ settings.site_title }}{% endblock %}</title>
-    <meta name="description" content="{{ settings.site_description }}">
+    <meta name="description" content="{{ site_description_text }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
   </head>
   <body>
@@ -12,7 +12,7 @@
       {% block site_header %}
         <div class="shell">
           <a class="site-title" href="{{ url_for('index') }}">{{ settings.site_title }}</a>
-          <p class="site-description">{{ settings.site_description }}</p>
+          <div class="site-description">{{ site_description_html }}</div>
         </div>
       {% endblock %}
     </header>

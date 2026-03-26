@@ -1,0 +1,32 @@
+services:
+  blog:
+    build:
+      context: .
+    environment:
+      SITE_TITLE: ${SITE_TITLE:-Maker's Diary}
+      SITE_DESCRIPTION: ${SITE_DESCRIPTION:-A blog generated from a public markdown repository.}
+      DIARY_REPOSITORY_URL: ${DIARY_REPOSITORY_URL}
+      DIARY_BRANCH: ${DIARY_BRANCH:-main}
+      POSTS_PATH: ${POSTS_PATH:-.}
+      ASSET_DIRECTORIES: ${ASSET_DIRECTORIES:-pasted images}
+      SYNC_INTERVAL_SECONDS: ${SYNC_INTERVAL_SECONDS:-300}
+      APP_HOST: 0.0.0.0
+      APP_PORT: 8000
+    restart: unless-stopped
+    volumes:
+      - blog_data:/app/data
+
+  nginx:
+    image: nginx:1.29-alpine
+    depends_on:
+      - blog
+    ports:
+      - "${HTTP_PORT:-80}:80"
+    restart: unless-stopped
+    volumes:
+      - ./deploy/nginx/http.conf:/etc/nginx/conf.d/default.conf:ro
+    environment:
+      NGINX_ENTRYPOINT_QUIET_LOGS: 1
+
+volumes:
+  blog_data:

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}{{ post.title }} | {{ settings.site_title }}{% endblock %}
+
+{% block content %}
+  <article class="post-page">
+    <p><a class="back-link" href="{{ url_for('index') }}">Back to all posts</a></p>
+    <header class="post-header">
+      <p class="eyebrow">{{ post.created_display }}</p>
+      <h1>{{ post.title }}</h1>
+      {% if post.tags %}
+        <p class="tag-row">{{ post.tags | join(" · ") }}</p>
+      {% endif %}
+    </header>
+    <div class="markdown-body">
+      {{ post.content }}
+    </div>
+  </article>
+{% endblock %}

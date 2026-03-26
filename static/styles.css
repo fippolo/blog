@@ -1,0 +1,165 @@
+:root {
+  --bg: #f4efe8;
+  --surface: rgba(255, 255, 255, 0.7);
+  --surface-strong: #fffaf5;
+  --border: rgba(44, 34, 24, 0.12);
+  --text: #241d18;
+  --muted: #6c6256;
+  --accent: #a5482c;
+  --accent-soft: #f2d8c9;
+  --shadow: 0 18px 40px rgba(60, 37, 16, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  color: var(--text);
+  background:
+    radial-gradient(circle at top left, rgba(165, 72, 44, 0.12), transparent 28rem),
+    linear-gradient(180deg, #f7f2eb 0%, var(--bg) 100%);
+  min-height: 100vh;
+}
+
+a {
+  color: inherit;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+  border-radius: 1rem;
+}
+
+.shell {
+  width: min(72rem, calc(100% - 2rem));
+  margin: 0 auto;
+}
+
+.site-header {
+  padding: 2rem 0 1rem;
+}
+
+.site-title {
+  font-size: clamp(2rem, 4vw, 3.6rem);
+  text-decoration: none;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+}
+
+.site-description,
+.hero-copy,
+.card-meta,
+.source-path,
+.tag-row,
+.meta-row,
+.back-link {
+  color: var(--muted);
+}
+
+.hero {
+  padding: 2rem 0 3rem;
+}
+
+.hero h1,
+.post-header h1 {
+  font-size: clamp(2.4rem, 5vw, 4.5rem);
+  line-height: 0.95;
+  letter-spacing: -0.05em;
+  margin: 0.3rem 0 1rem;
+  max-width: 14ch;
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.82rem;
+  color: var(--accent);
+  margin: 0;
+}
+
+.meta-row,
+.card-meta {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  font-size: 0.95rem;
+}
+
+.error {
+  color: #8b1f1f;
+}
+
+.post-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: 1rem;
+  padding-bottom: 4rem;
+}
+
+.post-card,
+.empty-state,
+.post-page {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 1.5rem;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(12px);
+}
+
+.post-card,
+.empty-state {
+  padding: 1.3rem;
+}
+
+.post-card h2,
+.empty-state h2 {
+  margin: 0.8rem 0 0.5rem;
+  font-size: 1.5rem;
+  line-height: 1.1;
+}
+
+.source-path {
+  margin-bottom: 0;
+  font-size: 0.9rem;
+}
+
+.post-page {
+  padding: 1.8rem;
+  margin-bottom: 4rem;
+}
+
+.markdown-body {
+  font-size: 1.08rem;
+  line-height: 1.7;
+}
+
+.markdown-body h2,
+.markdown-body h3 {
+  margin-top: 2rem;
+  line-height: 1.1;
+}
+
+.markdown-body a {
+  color: var(--accent);
+}
+
+.markdown-body p code,
+.markdown-body li code {
+  background: var(--accent-soft);
+  padding: 0.1rem 0.35rem;
+  border-radius: 0.4rem;
+}
+
+@media (max-width: 640px) {
+  .hero {
+    padding-top: 1rem;
+  }
+
+  .post-page {
+    padding: 1.2rem;
+  }
+}

@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="hero">
+    <p class="eyebrow">Synced from git</p>
+    <h1>Projects, notes, and build logs.</h1>
+    <p class="hero-copy">
+      This site reads markdown posts from a public repository and republishes them as a lightweight blog.
+    </p>
+    <div class="meta-row">
+      <span>Last sync: {{ last_sync or "Never" }}</span>
+      {% if last_error %}
+        <span class="error">Sync error: {{ last_error }}</span>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="post-list">
+    {% for post in posts %}
+      <article class="post-card">
+        <div class="card-meta">
+          <span>{{ post.created_display }}</span>
+          {% if post.tags %}
+            <span>{{ post.tags | join(", ") }}</span>
+          {% endif %}
+        </div>
+        <h2><a href="{{ url_for('post_detail', slug=post.slug) }}">{{ post.title }}</a></h2>
+        <p class="source-path">{{ post.source_path }}</p>
+      </article>
+    {% else %}
+      <article class="empty-state">
+        <h2>No posts found</h2>
+        <p>Check the repository URL, branch, and content format.</p>
+      </article>
+    {% endfor %}
+  </section>
+{% endblock %}

@@ -62,13 +62,20 @@ This repository includes an nginx + Certbot deployment path for Let's Encrypt ce
 
 1. Set `DOMAIN` and `LETSENCRYPT_EMAIL` in `.env`.
 2. Make sure your domain already points to the host running Docker.
-3. Request the first certificate. The script reads `DOMAIN` and `LETSENCRYPT_EMAIL` from `.env` automatically:
+3. Publish a test ACME challenge file and verify that it is reachable from the public internet:
 
 ```sh
-sh deploy/init-letsencrypt.sh
+sh deploy/publish-challenge.sh
 ```
 
-4. From then on, run the HTTPS stack with:
+4. Open the printed `http://.../.well-known/acme-challenge/...` URL and confirm the response body matches the script output.
+5. Request the first certificate:
+
+```sh
+sh deploy/request-certificate.sh
+```
+
+6. From then on, run the HTTPS stack with:
 
 ```sh
 docker compose -f docker-compose.yml -f docker-compose.https.yml up -d

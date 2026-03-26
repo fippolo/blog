@@ -62,7 +62,7 @@ This repository includes an nginx + Certbot deployment path for Let's Encrypt ce
 
 1. Set `DOMAIN` and `LETSENCRYPT_EMAIL` in `.env`.
 2. Make sure your domain already points to the host running Docker.
-3. Request the first certificate:
+3. Request the first certificate. The script reads `DOMAIN` and `LETSENCRYPT_EMAIL` from `.env` automatically:
 
 ```sh
 sh deploy/init-letsencrypt.sh

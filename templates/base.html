@@ -9,10 +9,12 @@
   </head>
   <body>
     <header class="site-header">
-      <div class="shell">
-        <a class="site-title" href="{{ url_for('index') }}">{{ settings.site_title }}</a>
-        <p class="site-description">{{ settings.site_description }}</p>
-      </div>
+      {% block site_header %}
+        <div class="shell">
+          <a class="site-title" href="{{ url_for('index') }}">{{ settings.site_title }}</a>
+          <p class="site-description">{{ settings.site_description }}</p>
+        </div>
+      {% endblock %}
     </header>
     <main class="shell">
       {% block content %}{% endblock %}

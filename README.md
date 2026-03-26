@@ -87,6 +87,23 @@ docker compose -f docker-compose.yml -f docker-compose.https.yml up -d
 
 The Certbot container renews certificates every 12 hours and nginx serves both HTTP and HTTPS.
 
+## Updating
+
+For normal server updates, use the helper script:
+
+```sh
+sudo sh deploy/update.sh
+```
+
+It performs these steps:
+
+- pulls the latest code from git
+- rebuilds and restarts the HTTPS deployment
+- shows the current compose status
+- prunes unused Docker images
+
+You do not need to rerun the certificate scripts for normal application updates.
+
 ## Configuration
 
 Environment variables:

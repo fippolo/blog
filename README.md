@@ -68,6 +68,8 @@ This repository includes an nginx + Certbot deployment path for Let's Encrypt ce
 sh deploy/publish-challenge.sh
 ```
 
+This step starts only the base HTTP nginx service on port `80` and mounts the ACME challenge webroot. It does not require an existing certificate.
+
 4. Open the printed `http://.../.well-known/acme-challenge/...` URL and confirm the response body matches the script output.
 5. Request the first certificate:
 

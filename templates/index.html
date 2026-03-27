@@ -1,10 +1,18 @@
 {% extends "base.html" %}
 
-{% block site_header %}{% endblock %}
+{% block site_header %}
+  <div class="shell">
+    <div class="hero-title-row">
+      <a class="site-title" href="{{ url_for('index') }}">{{ settings.site_title }}</a>
+      <button class="theme-toggle" type="button" aria-label="Switch to dark mode" aria-pressed="false">
+        Dark mode
+      </button>
+    </div>
+  </div>
+{% endblock %}
 
 {% block content %}
   <section class="hero">
-    <h1>{{ settings.site_title }}</h1>
     <div class="hero-copy">
       {{ site_description_html }}
     </div>

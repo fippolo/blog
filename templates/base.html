@@ -5,13 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}{{ settings.site_title }}{% endblock %}</title>
     <meta name="description" content="{{ site_description_text }}">
+    <script>
+      (function () {
+        const storedTheme = localStorage.getItem("theme");
+        const theme = storedTheme || "dark";
+        document.documentElement.dataset.theme = theme;
+      })();
+    </script>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
   </head>
   <body>
     <header class="site-header">
       {% block site_header %}
         <div class="shell">
-          <a class="site-title" href="{{ url_for('index') }}">{{ settings.site_title }}</a>
+          <div class="title-row">
+            <a class="site-title" href="{{ url_for('index') }}">{{ settings.site_title }}</a>
+            <button class="theme-toggle" type="button" aria-label="Switch to dark mode" aria-pressed="false">
+              Dark mode
+            </button>
+          </div>
           <div class="site-description">{{ site_description_html }}</div>
         </div>
       {% endblock %}
@@ -19,5 +31,30 @@
     <main class="shell">
       {% block content %}{% endblock %}
     </main>
+    <script>
+      (function () {
+        const root = document.documentElement;
+        const toggle = document.querySelector(".theme-toggle");
+        if (!toggle) {
+          return;
+        }
+
+        const syncToggle = function (theme) {
+          const isDark = theme === "dark";
+          toggle.textContent = isDark ? "Light mode" : "Dark mode";
+          toggle.setAttribute("aria-label", isDark ? "Switch to light mode" : "Switch to dark mode");
+          toggle.setAttribute("aria-pressed", String(isDark));
+        };
+
+        syncToggle(root.dataset.theme || "light");
+
+        toggle.addEventListener("click", function () {
+          const nextTheme = root.dataset.theme === "dark" ? "light" : "dark";
+          root.dataset.theme = nextTheme;
+          localStorage.setItem("theme", nextTheme);
+          syncToggle(nextTheme);
+        });
+      })();
+    </script>
   </body>
 </html>

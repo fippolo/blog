@@ -29,11 +29,16 @@ MARKDOWN_EXTENSIONS = [
     "sane_lists",
     "smarty",
     "toc",
+    "pymdownx.highlight",
     "pymdownx.tasklist",
     "pymdownx.superfences",
     "pymdownx.tilde",
 ]
 MARKDOWN_EXTENSION_CONFIGS = {
+    "pymdownx.highlight": {
+        "use_pygments": True,
+        "css_class": "codehilite",
+    },
     "pymdownx.tasklist": {"custom_checkbox": True},
 }
 ALLOWED_TAGS = set(bleach.sanitizer.ALLOWED_TAGS).union(
@@ -70,6 +75,7 @@ ALLOWED_ATTRIBUTES = {
     "span": ["class"],
     "div": ["class"],
     "code": ["class"],
+    "pre": ["class"],
 }
 
 

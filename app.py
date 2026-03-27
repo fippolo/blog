@@ -108,6 +108,7 @@ class Settings:
 settings = Settings()
 app = Flask(__name__)
 content_lock = threading.Lock()
+sync_started = False
 content_cache: dict[str, Any] = {
     "posts": [],
     "posts_by_slug": {},
@@ -308,6 +309,16 @@ def sync_loop() -> None:
         time.sleep(settings.sync_interval_seconds)
 
 
+def start_sync() -> None:
+    global sync_started
+    if sync_started:
+        return
+
+    sync_once()
+    threading.Thread(target=sync_loop, daemon=True).start()
+    sync_started = True
+
+
 @app.route("/")
 def index():
     with content_lock:
@@ -348,10 +359,10 @@ def healthcheck():
 
 
 def create_app() -> Flask:
+    start_sync()
     return app
 
 
 if __name__ == "__main__":
-    sync_once()
-    threading.Thread(target=sync_loop, daemon=True).start()
+    start_sync()
     app.run(host=settings.host, port=settings.port, debug=False)

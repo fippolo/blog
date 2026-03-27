@@ -1,4 +1,5 @@
 import os
+import logging
 import shutil
 import subprocess
 import threading
@@ -108,6 +109,7 @@ class Settings:
 settings = Settings()
 app = Flask(__name__)
 content_lock = threading.Lock()
+sync_lock = threading.Lock()
 sync_started = False
 content_cache: dict[str, Any] = {
     "posts": [],
@@ -304,6 +306,7 @@ def sync_loop() -> None:
         try:
             sync_once()
         except Exception as exc:  # pragma: no cover
+            logging.exception("Background sync failed")
             with content_lock:
                 content_cache["last_error"] = str(exc)
         time.sleep(settings.sync_interval_seconds)
@@ -311,12 +314,19 @@ def sync_loop() -> None:
 
 def start_sync() -> None:
     global sync_started
-    if sync_started:
-        return
+    with sync_lock:
+        if sync_started:
+            return
+        sync_started = True
 
-    sync_once()
+    try:
+        sync_once()
+    except Exception as exc:  # pragma: no cover
+        logging.exception("Initial sync failed")
+        with content_lock:
+            content_cache["last_error"] = str(exc)
+
     threading.Thread(target=sync_loop, daemon=True).start()
-    sync_started = True
 
 
 @app.route("/")
@@ -359,7 +369,6 @@ def healthcheck():
 
 
 def create_app() -> Flask:
-    start_sync()
     return app
 
 

@@ -31,6 +31,14 @@
     <main class="shell">
       {% block content %}{% endblock %}
     </main>
+    <footer class="site-footer">
+      <div class="shell footer-row">
+        {% if settings.repository_url %}
+          <a href="{{ settings.repository_url }}" rel="noopener noreferrer">GitHub</a>
+        {% endif %}
+        <span>built with Codex</span>
+      </div>
+    </footer>
     <script>
       (function () {
         const root = document.documentElement;

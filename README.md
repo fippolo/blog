@@ -15,7 +15,7 @@ The `blog` container clones the configured repository, hard-resets to the select
 
 The sync logic uses plain `git clone` and `git fetch` over HTTPS, so public GitHub repositories work without tokens or SSH keys.
 
-Markdown rendering is handled through Python markdown libraries rather than ad-hoc string conversion. The app currently supports standard Markdown plus tables, fenced code blocks, task lists, footnotes, and Obsidian-style image embeds.
+Markdown rendering is handled through Python markdown libraries rather than ad-hoc string conversion. The app currently supports standard Markdown plus tables, fenced code blocks, task lists, footnotes, Obsidian-style image embeds, and inter-note links.
 
 ## Supported diary format
 
@@ -27,7 +27,9 @@ The source repository can be any git repository as long as it follows this shape
 4. `tags` can be a list or a string.
 5. `title` is optional. If omitted, the filename becomes the title.
 6. Obsidian image embeds in the form `![[file-name.png]]` are supported.
-7. Assets are copied from the directories listed in `ASSET_DIRECTORIES` (default: `pasted images`).
+7. Wiki links such as `[[other-note]]`, `[[folder/other-note]]`, and `[[other-note|custom label]]` are converted to internal post links.
+8. Markdown links to local `.md` files are also rewritten to internal post links when they match another published post.
+9. Assets are copied from the directories listed in `ASSET_DIRECTORIES` (default: `pasted images`).
 
 Example:
 
@@ -123,5 +125,5 @@ Environment variables:
 
 - The source repository stays separate from this deployment repository.
 - The app currently targets public repositories only.
-- Embedded wiki-links other than images are not converted.
+- Filename-only wiki links work only when that filename is unique across published posts.
 - Parts of this repository were produced with heavy LLM assistance during implementation. Review the code and deployment configuration yourself before using it in production.

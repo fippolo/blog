@@ -4,6 +4,8 @@ import shutil
 import subprocess
 import threading
 import time
+import html
+import re
 from dataclasses import dataclass
 from datetime import date, datetime
 from pathlib import Path
@@ -177,8 +179,6 @@ def normalize_date(value: Any) -> date | None:
 
 
 def replace_obsidian_embeds(text: str) -> str:
-    import re
-
     def replacement(match: re.Match[str]) -> str:
         target = match.group(1).strip()
         file_name = Path(target).name
@@ -187,14 +187,134 @@ def replace_obsidian_embeds(text: str) -> str:
     return re.sub(r"!\[\[(.+?)\]\]", replacement, text)
 
 
-def render_markdown(text: str) -> str:
+def build_post_link_index(relative_paths: list[Path]) -> dict[str, str]:
+    link_index: dict[str, str] = {}
+    basename_to_slug: dict[str, str | None] = {}
+
+    for relative_path in relative_paths:
+        slug = slugify(relative_path)
+        with_suffix = relative_path.as_posix().lower()
+        without_suffix = relative_path.with_suffix("").as_posix().lower()
+        basename = relative_path.name.lower()
+        stem = relative_path.stem.lower()
+
+        link_index[with_suffix] = slug
+        link_index[without_suffix] = slug
+        basename_to_slug[basename] = (
+            slug if basename not in basename_to_slug else None
+        )
+        basename_to_slug[stem] = slug if stem not in basename_to_slug else None
+
+    for key, slug in basename_to_slug.items():
+        if slug:
+            link_index[key] = slug
+
+    return link_index
+
+
+def resolve_post_target(
+    target: str,
+    source_relative_path: Path | None,
+    link_index: dict[str, str] | None,
+) -> str | None:
+    if not link_index:
+        return None
+
+    candidate = target.strip()
+    if not candidate:
+        return None
+    if "://" in candidate or candidate.startswith(("mailto:", "#", "/assets/")):
+        return None
+
+    fragment = ""
+    if "#" in candidate:
+        candidate, fragment_part = candidate.split("#", 1)
+        fragment = f"#{fragment_part}"
+
+    normalized = candidate.replace("\\", "/").strip()
+    if not normalized:
+        return None
+
+    path_candidate = Path(normalized.lstrip("/"))
+    candidate_keys: list[str] = []
+
+    if source_relative_path and not normalized.startswith("/"):
+        source_dir = source_relative_path.parent
+        resolved = (source_dir / path_candidate).as_posix().lower()
+        candidate_keys.append(resolved)
+        candidate_keys.append(Path(resolved).with_suffix("").as_posix().lower())
+
+    as_posix = path_candidate.as_posix().lower()
+    candidate_keys.append(as_posix)
+    candidate_keys.append(Path(as_posix).with_suffix("").as_posix().lower())
+    candidate_keys.append(path_candidate.name.lower())
+    candidate_keys.append(path_candidate.stem.lower())
+
+    for key in dict.fromkeys(candidate_keys):
+        slug = link_index.get(key)
+        if slug:
+            return f"/posts/{slug}/{fragment}"
+
+    return None
+
+
+def replace_obsidian_links(
+    text: str,
+    source_relative_path: Path | None,
+    link_index: dict[str, str] | None,
+) -> str:
+    def replacement(match: re.Match[str]) -> str:
+        raw_target = match.group(1).strip()
+        target, separator, label = raw_target.partition("|")
+        href = resolve_post_target(target, source_relative_path, link_index)
+        if not href:
+            return match.group(0)
+
+        if separator:
+            link_text = label.strip() or Path(target).stem
+        else:
+            display_target = target.split("#", 1)[0].rstrip("/")
+            link_text = Path(display_target).stem or display_target
+
+        return f'<a href="{html.escape(href, quote=True)}">{html.escape(link_text)}</a>'
+
+    return re.sub(r"(?<!!)\[\[([^\]]+)\]\]", replacement, text)
+
+
+def rewrite_markdown_file_links(
+    rendered_html: str,
+    source_relative_path: Path | None,
+    link_index: dict[str, str] | None,
+) -> str:
+    def replacement(match: re.Match[str]) -> str:
+        quote = match.group(1)
+        href = html.unescape(match.group(2))
+        if not href.lower().endswith((".md", ".markdown")) and ".md#" not in href.lower():
+            return match.group(0)
+
+        resolved = resolve_post_target(href, source_relative_path, link_index)
+        if not resolved:
+            return match.group(0)
+
+        return f'href={quote}{html.escape(resolved, quote=True)}{quote}'
+
+    return re.sub(r'href=(["\'])(.+?)\1', replacement, rendered_html)
+
+
+def render_markdown(
+    text: str,
+    source_relative_path: Path | None = None,
+    link_index: dict[str, str] | None = None,
+) -> str:
     processed = replace_obsidian_embeds(text)
+    processed = replace_obsidian_links(processed, source_relative_path, link_index)
     rendered = markdown.markdown(
         processed,
         extensions=MARKDOWN_EXTENSIONS,
         extension_configs=MARKDOWN_EXTENSION_CONFIGS,
         output_format="html5",
     )
+    rendered = rewrite_markdown_file_links(rendered, source_relative_path, link_index)
     return bleach.clean(rendered, tags=ALLOWED_TAGS, attributes=ALLOWED_ATTRIBUTES)
 
 
@@ -256,6 +376,7 @@ def build_content() -> dict[str, Any]:
     posts: list[dict[str, Any]] = []
     posts_by_slug: dict[str, dict[str, Any]] = {}
     skipped_directories = {Path(asset_dir).parts[0] for asset_dir in settings.asset_directories}
+    discovered_posts: list[tuple[Path, frontmatter.Post, Path, str]] = []
 
     for path in sorted(repo_posts_dir.rglob("*.md")):
         if any(part.startswith(".") for part in path.parts):
@@ -263,10 +384,15 @@ def build_content() -> dict[str, Any]:
         if skipped_directories.intersection(path.relative_to(repo_posts_dir).parts):
             continue
 
-        post = frontmatter.load(path)
+        relative_path = path.relative_to(repo_posts_dir)
+        slug = slugify(relative_path)
+        discovered_posts.append((path, frontmatter.load(path), relative_path, slug))
+
+    link_index = build_post_link_index([relative_path for _, _, relative_path, _ in discovered_posts])
+
+    for path, post, relative_path, slug in discovered_posts:
         created = normalize_date(post.metadata.get("created"))
-        slug = slugify(path.relative_to(repo_posts_dir))
-        html = render_markdown(post.content)
+        html = render_markdown(post.content, relative_path, link_index)
         output_path = POSTS_PUBLIC_DIR / f"{slug}.html"
         output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.write_text(html, encoding="utf-8")
